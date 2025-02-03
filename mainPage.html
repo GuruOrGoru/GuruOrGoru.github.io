@@ -1,0 +1,627 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=0.8">
+    <title>GORU</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/alpinejs/3.10.3/cdn.min.js" defer></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/howler/2.2.3/howler.min.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @keyframes flicker {
+            0% { opacity: 0.8; }
+            5% { opacity: 0.5; }
+            10% { opacity: 0.9; }
+            15% { opacity: 0.7; }
+            20% { opacity: 1; }
+            25% { opacity: 0.6; }
+            30% { opacity: 0.8; }
+            35% { opacity: 1; }
+            40% { opacity: 0.4; }
+            45% { opacity: 0.9; }
+            50% { opacity: 1; }
+            100% { opacity: 1; }
+        }
+
+        .flicker {
+            animation: flicker 5s infinite;
+        }
+
+        @keyframes pulse-border {
+            0% { border-color: rgba(139, 0, 0, 0.5); }
+            50% { border-color: rgba(255, 0, 0, 0.8); }
+            100% { border-color: rgba(139, 0, 0, 0.5); }
+        }
+
+        .pulse-border {
+            animation: pulse-border 2s infinite;
+        }
+
+        .horror-text-shadow {
+            text-shadow: 
+                0 0 10px rgba(255, 0, 0, 0.5),
+                0 0 20px rgba(255, 0, 0, 0.3),
+                0 0 30px rgba(255, 0, 0, 0.2);
+        }
+
+        .game-ui-border {
+            border: 2px solid rgba(255, 0, 0, 0.3);
+            box-shadow: 
+                0 0 10px rgba(255, 0, 0, 0.2),
+                inset 0 0 20px rgba(255, 0, 0, 0.1);
+        }
+
+        .scanline {
+            background: linear-gradient(
+                to bottom,
+                transparent 50%,
+                rgba(0, 0, 0, 0.5) 50%
+            );
+            background-size: 100% 4px;
+            pointer-events: none;
+        }
+
+        .crt-overlay {
+            background: 
+                radial-gradient(
+                    circle at center,
+                    transparent 30%,
+                    rgba(0, 0, 0, 0.2) 90%
+                );
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body 
+    class="bg-black min-h-screen text-red-500"
+    x-data="{
+        currentSection: 'home',
+        menuOpen: false,
+        loading: true,
+        glitchSound: null,
+        happySound: null,
+        health: 100,
+        experience: 0,
+        notifications: [],
+        achievements: [],
+        inventory: [],
+        showInventory: false,
+        initialized: false,
+        audioInitialized: false,
+
+        async initAudio() {
+            try {
+                // Create audio context
+                const AudioContext = window.AudioContext || window.webkitAudioContext;
+                const audioContext = new AudioContext();
+                
+                // Initialize Howler
+                this.glitchSound = new Howl({
+                    src: ['glitch.mp3'],
+                    volume: 0.3,
+                    html5: true,
+                    onloaderror: (id, err) => {
+                        console.error('Glitch sound load error:', err);
+                        this.addNotification('Error loading sound effects');
+                    }
+                });
+
+                this.happySound = new Howl({
+                    src: ['happy.mp3'],
+                    loop: true,
+                    volume: 0.5,
+                    html5: true,
+                    onload: () => {
+                        console.log('Happy sound loaded successfully');
+                        this.audioInitialized = true;
+                        this.playBackgroundMusic();
+                        this.proceedWithStartup();
+                    },
+                    onloaderror: (id, err) => {
+                        console.error('Happy sound load error:', err);
+                        this.addNotification('Error loading background music');
+                    }
+                });
+            } catch (error) {
+                console.error('Audio initialization failed:', error);
+                this.addNotification('Failed to initialize audio system');
+            }
+        },
+
+        async playBackgroundMusic() {
+            if (!this.audioInitialized) return;
+            
+            try {
+                await this.happySound.play();
+                console.log('Background music started');
+            } catch (error) {
+                console.error('Failed to play background music:', error);
+                this.addNotification('Failed to start background music');
+            }
+        },
+
+        async proceedWithStartup() {
+            await this.sleep(2000);
+            this.loading = false;
+            this.addAchievement('Welcome to Hell', 'Survived the initialization process');
+            this.initialized = true;
+        },
+
+        async init() {
+            if (this.initialized) return;
+            // Don't proceed until audio is initialized
+            this.loading = true;
+        },
+
+        addNotification(text) {
+            const id = Date.now();
+            this.notifications.push({ text, id });
+            setTimeout(() => {
+                this.notifications = this.notifications.filter(n => n.id !== id);
+            }, 3000);
+        },
+
+        addAchievement(title, description) {
+            this.achievements.push({ title, description, id: Date.now() });
+            this.experience += 35;
+        },
+
+        sleep(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        }
+    }"
+    x-init="init()"
+>
+    <!-- Loading Screen with Required Audio Initialization -->
+    <div x-show="loading" 
+         class="fixed inset-0 bg-black z-50 flex items-center justify-center">
+        <div class="text-center space-y-6">
+            <div class="text-4xl horror-text-shadow flicker mb-8">
+                NEURAL INTERFACE INITIALIZATION REQUIRED
+            </div>
+            
+            <!-- Audio initialization status -->
+            <div class="space-y-4" x-show="!audioInitialized">
+                <div class="text-xl text-red-400 horror-text-shadow">
+                    Audio System Initialization Required
+                </div>
+                <div class="text-sm text-red-300/80 mb-4">
+                    Click the button below to initialize the neural interface
+                </div>
+                <div class="flex items-center justify-center h-full">
+                    <button 
+                        @click="initAudio()"
+                        class="px-8 py-3 bg-red-900/30 hover:bg-red-900/50 
+                               border-2 border-red-500 rounded-lg 
+                               transition-all duration-300 
+                               hover:scale-105 active:scale-95
+                               flex items-center justify-center space-x-2
+                               text-lg font-medium
+                               animate-pulse"
+                    >
+                        <i class="fas fa-play-circle mr-2"></i>
+                        Initialize Neural Interface
+                    </button>
+                </div>
+                
+            </div>
+
+            <!-- Loading indicator after initialization -->
+            <div class="space-y-4" x-show="audioInitialized && loading">
+                <div class="w-64 h-2 bg-gray-800 rounded-full overflow-hidden mx-auto">
+                    <div class="h-full bg-red-600 animate-pulse"></div>
+                </div>
+                <div class="text-sm text-red-300/80">
+                    Bio-digital synchronization in progress...
+                </div>
+            </div>
+        </div>
+    </div>
+
+<!-- Screen Effects - Moved outside nav to prevent interference -->
+<div class="fixed inset-0 pointer-events-none -z-10">
+    <div class="absolute inset-0 scanline opacity-10"></div>
+    <div class="absolute inset-0 crt-overlay"></div>
+</div>
+
+<!-- Navigation Menu for Larger Screens -->
+<nav class="fixed top-0 left-0 w-full bg-gradient-to-b from-black via-black/95 to-black/75 backdrop-blur-md z-50 game-ui-border shadow-lg shadow-black/50" :class="{'border-red-600': menuOpen}">
+    <div class="container mx-auto px-4 py-3">
+        <div class="flex justify-between items-center">
+            <!-- Logo section -->
+            <div class="text-2xl horror-text-shadow flicker font-bold relative z-10">
+                <i class="fas fa-skull-crossbones mr-2"></i>
+                <span class="text-red-500">GORU</span>
+            </div>
+
+            <!-- Health and XP Bar -->
+            <div class="hidden md:flex items-center space-x-6">
+                <div class="flex items-center">
+                    <p>Earn achievements</p>
+                </div>
+                <div class="flex items-center">
+                    <i class="fas fa-star text-yellow-400 mr-2 text-lg"></i>
+                    <div class="w-32 h-3 bg-gray-900 rounded-full overflow-hidden border border-gray-700">
+                        <div class="h-full bg-gradient-to-r from-yellow-600 to-yellow-400" :style="`width: ${(experience % 100)}%`"></div>
+                    </div>
+                    <span class="ml-2 text-yellow-400 font-medium" x-text="Math.floor(experience / 100)"></span>
+                </div>
+            </div>
+
+            <!-- Menu Button for Larger Screens -->
+            <button @click="menuOpen = !menuOpen" class="text-2xl hover:text-red-400 transition-colors duration-200 relative z-10 p-2">
+                <i class="fas" :class="menuOpen ? 'fa-times' : 'fa-bars'"></i>
+            </button>
+        </div>
+
+        <!-- Menu Items -->
+        <div x-show="menuOpen" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 transform -translate-y-4" x-transition:enter-end="opacity-100 transform translate-y-0" x-transition:leave="transition ease-in duration-200" x-transition:leave-start="opacity-100 transform translate-y-0" x-transition:leave-end="opacity-0 transform -translate-y-4" class="py-4 mt-2">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <button @click="currentSection = 'home'; menuOpen = false;" @click.once=" addAchievement('Home sweet home','You successfully survived.')" class="game-ui-border p-4 hover:bg-red-900/30 active:bg-red-900/50 transition-all duration-200 rounded-lg flex items-center justify-center group" :class="{'bg-red-900/40 border-red-500/50': currentSection === 'home'}">
+                    <i class="fas fa-home text-lg group-hover:text-red-400">&nbsp;</i><span class="font-medium">Home</span>
+                </button>
+                <button @click="currentSection = 'projects'; menuOpen = false;" @click.once=" addAchievement('Peeked at my projects','You successfully looked my proojects without dying')" class="game-ui-border p-4 hover:bg-red-900/30 active:bg-red-900/50 transition-all duration-200 rounded-lg flex items-center justify-center group" :class="{'bg-red-900/40 border-red-500/50': currentSection === 'projects'}">
+                    <i class="fas fa-project-diagram text-lg group-hover:text-red-400">&nbsp;</i><span class="font-medium">Projects</span>
+                </button>
+                <button @click="currentSection = 'skills'; menuOpen = false;" @click.once=" addAchievement('You saw my skills','I am happy, you respected my skills')" class="game-ui-border p-4 hover:bg-red-900/30 active:bg-red-900/50 transition-all duration-200 rounded-lg flex items-center justify-center group" :class="{'bg-red-900/40 border-red-500/50': currentSection === 'skills'}">
+                    <i class="fas fa-brain text-lg group-hover:text-red-400">&nbsp;</i><span class="font-medium">Skills</span>
+                </button>
+                <button @click="currentSection = 'contact'; menuOpen = false;" class="game-ui-border p-4 hover:bg-red-900/30 active:bg-red-900/50 transition-all duration-200 rounded-lg flex items-center justify-center group" :class="{'bg-red-900/40 border-red-500/50': currentSection === 'contact'}">
+                    <i class="fas fa-envelope text-lg group-hover:text-red-400">&nbsp;</i><span class="font-medium">Contact</span>
+                </button>
+            </div>
+        </div>
+    </div>
+</nav>
+
+<!-- Navigation Menu for Small Screens -->
+<nav class="fixed top-0 left-0 w-full bg-gradient-to-b from-black via-black/90 to-black/60 backdrop-blur-md z-50 game-ui-border shadow-lg shadow-black/50 md:hidden">
+    <div class="container mx-auto px-4 py-3">
+        <div class="flex justify-between items-center">
+            <!-- Logo Section -->
+            <div class="text-2xl horror-text-shadow flicker font-bold relative z-10">
+                <i class="fas fa-skull-crossbones mr-2"></i>
+                <span class="text-red-500">GORU</span>
+            </div>
+
+            <!-- Menu Button for Small Screens -->
+            <button @click="menuOpen = !menuOpen" class="text-2xl hover:text-red-400 transition-colors duration-200 relative z-10 p-2">
+                <i class="fas" :class="menuOpen ? 'fa-times' : 'fa-bars'"></i>
+            </button>
+        </div>
+
+        <!-- Menu Items for Small Screens -->
+        <div x-show="menuOpen" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 transform -translate-y-4" x-transition:enter-end="opacity-100 transform translate-y-0" x-transition:leave="transition ease-in duration-200" x-transition:leave-start="opacity-100 transform translate-y-0" x-transition:leave-end="opacity-0 transform -translate-y-4" class="py-4 mt-2 bg-black rounded-lg">
+            <div class="flex flex-col gap-4">
+                <button @click="currentSection = 'home'; menuOpen = false;" @click.once=" addAchievement('Home sweet home','You successfully survived.')" class="game-ui-border p-4 text-left hover:bg-red-900/30 active:bg-red-900/50 transition-all duration-200 rounded-lg">
+                    <i class="fas fa-home text-lg group-hover:text-red-400">&nbsp;</i><span class="font-medium">Home</span>
+                </button>
+                <button @click="currentSection = 'projects'; menuOpen = false;" @click.once=" addAchievement('Peeked at my projects','You successfully looked my proojects without dying')" class="game-ui-border p-4 text-left hover:bg-red-900/30 active:bg-red-900/50 transition-all duration-200 rounded-lg">
+                    <i class="fas fa-project-diagram text-lg group-hover:text-red-400">&nbsp;</i><span class="font-medium">Projects</span>
+                </button>
+                <button @click="currentSection = 'skills'; menuOpen = false;" @click.once=" addAchievement('You saw my skills','I am happy, you respected my skills')" class="game-ui-border p-4 text-left hover:bg-red-900/30 active:bg-red-900/50 transition-all duration-200 rounded-lg">
+                    <i class="fas fa-brain text-lg group-hover:text-red-400">&nbsp;</i><span class="font-medium">Skills</span>
+                </button>
+                <button @click="currentSection = 'contact'; menuOpen = false;" class="game-ui-border p-4 text-left hover:bg-red-900/30 active:bg-red-900/50 transition-all duration-200 rounded-lg">
+                    <i class="fas fa-envelope text-lg group-hover:text-red-400">&nbsp;</i><span class="font-medium">Contact</span>
+                </button>
+            </div>
+        </div>
+    </div>
+</nav>
+
+
+<!-- Spacer to prevent content overlap -->
+<div class="h-16"></div>
+    <!-- Main Content -->
+    <main class="container mx-auto px-4 pt-24 pb-16">
+        <!-- Home Section -->
+        <section x-show="currentSection === 'home'" 
+                 x-transition:enter="transition ease-out duration-500"
+                 class="space-y-8">
+            <div class="game-ui-border p-8 rounded-lg backdrop-blur-sm bg-black/50">
+                <h1 class="text-4xl md:text-6xl mb-4 horror-text-shadow">
+                    Welcome to the Nightmare
+                </h1>
+                <p class="text-gray-400 text-lg leading-relaxed">
+                    I am a digital architect crafting nightmares in code. 
+                    My creations lurk in the shadows of the web, waiting to be discovered.
+                    Enter at your own risk.
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div class="game-ui-border p-6 rounded-lg hover:bg-red-900/20 transition-colors">
+                    <h2 class="text-2xl mb-4 flex items-center">
+                        <i class="fas fa-code-branch mr-3"></i>
+                        Latest Experiments
+                    </h2>
+                    <ul class="space-y-4 text-gray-400">
+                        <li class="flex items-center">
+                            <i class="fas fa-vial mr-2"></i>
+                            Neural Network Visualization
+                        </li>
+                        <li class="flex items-center">
+                            <i class="fas fa-robot mr-2"></i>
+                            AI-Powered Horror Generator
+                        </li>
+                        <li class="flex items-center">
+                            <i class="fas fa-ghost mr-2"></i>
+                            Digital Haunting Simulator
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="game-ui-border p-6 rounded-lg hover:bg-red-900/20 transition-colors">
+                    <h2 class="text-2xl mb-4 flex items-center">
+                        <i class="fas fa-trophy mr-3"></i>
+                        Achievements
+                    </h2>
+                    <div class="space-y-4">
+                        <template x-for="achievement in achievements" :key="achievement.id">
+                            <div class="text-gray-400">
+                                <div class="font-bold" x-text="achievement.title"></div>
+                                <div class="text-sm" x-text="achievement.description"></div>
+                            </div>
+                        </template>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Projects Section -->
+        <section x-show="currentSection === 'projects'"
+                 x-transition:enter="transition ease-out duration-500"
+                 class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <template x-for="i in 6" :key="i">
+                <div class="game-ui-border p-6 rounded-lg hover:bg-red-900/20 transition-colors cursor-pointer">
+                    <div class="aspect-w-16 aspect-h-9 mb-4">
+                        <div class="w-full h-full bg-gray-800 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-question text-4xl"></i>
+                        </div>
+                    </div>
+                    <h3 class="text-xl mb-2">Project Echo #<span x-text="i"></span></h3>
+                    <p class="text-gray-400">A forbidden experiment that pushes the boundaries of digital consciousness.</p>
+                </div>
+            </template>
+        </section>
+
+        <!-- Skills Section -->
+        <section x-show="currentSection === 'skills'"
+                 x-transition:enter="transition ease-out duration-500"
+                 class="space-y-8">
+            <div class="game-ui-border p-6 rounded-lg">
+                <h2 class="text-2xl mb-6 flex items-center">
+                    <i class="fas fa-dna mr-3"></i>
+                    Digital Arsenal
+                </h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <template x-for="(skill, index) in [
+                        { name: 'Neural Programming', level: 87 },
+                        { name: 'Reality Manipulation', level: 92 },
+                        { name: 'Quantum Computing', level: 76 },
+                        { name: 'Bio-digital Integration', level: 95 },
+                        { name: 'Chaos Engineering', level: 88 },
+                        { name: 'Mind Hacking', level: 91 }
+                    ]" :key="index">
+                        <div class="space-y-2">
+                            <div class="flex justify-between text-gray-400">
+                                <span x-text="skill.name"></span>
+                                <span x-text="skill.level + '%'"></span>
+                            </div>
+                            <div class="w-full h-2 bg-gray-800 rounded-full overflow-hidden">
+                                <div class="h-full bg-red-600 transition-all duration-1000"
+                                     :style="`width: ${skill.level}%`"></div>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+            </div>
+
+            <!-- Skill Tree -->
+            <div class="game-ui-border p-6 rounded-lg">
+                <h2 class="text-2xl mb-6">Dark Arts Mastery</h2>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <!-- Frontend Path -->
+                    <div class="space-y-4">
+                        <h3 class="text-xl mb-4 horror-text-shadow">Frontend Sorcery</h3>
+                        <div class="space-y-2">
+                            <div class="game-ui-border p-3 rounded bg-red-900/20">
+                                <div class="flex justify-between">
+                                    <span>HTML5 Necromancy</span>
+                                    <span>MAX</span>
+                                </div>
+                            </div>
+                            <div class="game-ui-border p-3 rounded">
+                                <div class="flex justify-between">
+                                    <span>CSS Dark Arts</span>
+                                    <span>LVL 18</span>
+                                </div>
+                            </div>
+                            <div class="game-ui-border p-3 rounded">
+                                <div class="flex justify-between">
+                                    <span>JavaScript Curses</span>
+                                    <span>LVL 15</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Backend Path -->
+                    <div class="space-y-4">
+                        <h3 class="text-xl mb-4 horror-text-shadow">Backend Witchcraft</h3>
+                        <div class="space-y-2">
+                            <div class="game-ui-border p-3 rounded">
+                                <div class="flex justify-between">
+                                    <span>Node.js Rituals</span>
+                                    <span>LVL 12</span>
+                                </div>
+                            </div>
+                            <div class="game-ui-border p-3 rounded bg-red-900/20">
+                                <div class="flex justify-between">
+                                    <span>Python Shamanism</span>
+                                    <span>MAX</span>
+                                </div>
+                            </div>
+                            <div class="game-ui-border p-3 rounded">
+                                <div class="flex justify-between">
+                                    <span>Database Demonology</span>
+                                    <span>LVL 16</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- DevOps Path -->
+                    <div class="space-y-4">
+                        <h3 class="text-xl mb-4 horror-text-shadow">DevOps Occultism</h3>
+                        <div class="space-y-2">
+                            <div class="game-ui-border p-3 rounded">
+                                <div class="flex justify-between">
+                                    <span>Docker Summoning</span>
+                                    <span>LVL 14</span>
+                                </div>
+                            </div>
+                            <div class="game-ui-border p-3 rounded">
+                                <div class="flex justify-between">
+                                    <span>Cloud Divination</span>
+                                    <span>LVL 13</span>
+                                </div>
+                            </div>
+                            <div class="game-ui-border p-3 rounded bg-red-900/20">
+                                <div class="flex justify-between">
+                                    <span>CI/CD Blood Pacts</span>
+                                    <span>MAX</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Contact Section -->
+        <section x-show="currentSection === 'contact'"
+                 x-transition:enter="transition ease-out duration-500"
+                 class="space-y-8">
+            <div class="game-ui-border p-8 rounded-lg backdrop-blur-sm bg-black/50">
+                <h2 class="text-4xl mb-6 horror-text-shadow">Summon Me</h2>
+                <form @submit.prevent="addNotification('Message sent to the void...')" class="space-y-6">
+                    <div class="space-y-2">
+                        <label class="block text-gray-400">Your Name (True name not required)</label>
+                        <input type="text" 
+                               class="w-full bg-gray-900 border-2 border-red-900/50 rounded-lg p-3 text-white focus:border-red-500 transition-colors"
+                               placeholder="Enter your alias">
+                    </div>
+                    <div class="space-y-2">
+                        <label class="block text-gray-400">Digital Séance Method (Email)</label>
+                        <input type="email" 
+                               class="w-full bg-gray-900 border-2 border-red-900/50 rounded-lg p-3 text-white focus:border-red-500 transition-colors"
+                               placeholder="your@ethereal.realm">
+                    </div>
+                    <div class="space-y-2">
+                        <label class="block text-gray-400">Your Message to the Void</label>
+                        <textarea class="w-full bg-gray-900 border-2 border-red-900/50 rounded-lg p-3 text-white focus:border-red-500 transition-colors h-32"
+                                  placeholder="Speak your dark desires..."></textarea>
+                    </div>
+                    <button type="submit"
+                            class="w-full bg-red-900/50 hover:bg-red-900/70 text-white p-4 rounded-lg transition-colors flex items-center justify-center space-x-2">
+                        <i class="fas fa-pentagram"></i>
+                        <span>Begin the Ritual</span>
+                    </button>
+                </form>
+            </div>
+
+            <!-- Social Links -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <a href="#" class="game-ui-border p-6 rounded-lg hover:bg-red-900/20 transition-colors group">
+                    <div class="flex items-center space-x-4">
+                        <i class="fab fa-github text-4xl group-hover:animate-pulse"></i>
+                        <div>
+                            <div class="text-xl">GitHub Catacombs</div>
+                            <div class="text-gray-400">Explore my cursed repositories</div>
+                        </div>
+                    </div>
+                </a>
+                <a href="#" class="game-ui-border p-6 rounded-lg hover:bg-red-900/20 transition-colors group">
+                    <div class="flex items-center space-x-4">
+                        <i class="fab fa-linkedin text-4xl group-hover:animate-pulse"></i>
+                        <div>
+                            <div class="text-xl">LinkedIn Nethersphere</div>
+                            <div class="text-gray-400">Professional haunting network</div>
+                        </div>
+                    </div>
+                </a>
+                <a href="#" class="game-ui-border p-6 rounded-lg hover:bg-red-900/20 transition-colors group">
+                    <div class="flex items-center space-x-4">
+                        <i class="fab fa-twitter text-4xl group-hover:animate-pulse"></i>
+                        <div>
+                            <div class="text-xl">Twitter Grimoire</div>
+                            <div class="text-gray-400">Digital incantations & updates</div>
+                        </div>
+                    </div>
+                </a>
+            </div>
+        </section>
+    </main>
+
+    <!-- Notifications -->
+    <div class="fixed top-20 right-4 z-50 space-y-2 pointer-events-none">
+        <template x-for="notification in notifications" :key="notification.id">
+            <div class="bg-red-900/80 text-white px-6 py-3 rounded-lg backdrop-blur-sm"
+                 x-transition:enter="transition ease-out duration-300"
+                 x-transition:enter-start="opacity-0 transform translate-x-4"
+                 x-transition:enter-end="opacity-100 transform translate-x-0"
+                 x-transition:leave="transition ease-in duration-300"
+                 x-transition:leave-start="opacity-100 transform translate-x-0"
+                 x-transition:leave-end="opacity-0 transform translate-x-4">
+                <div x-text="notification.text"></div>
+            </div>
+        </template>
+    </div>
+
+    <!-- Inventory Button -->
+    <button @click="showInventory = !showInventory"
+            class="fixed bottom-4 right-4 bg-red-900/50 hover:bg-red-900/70 text-white p-4 rounded-full transition-colors">
+        <i class="fas fa-briefcase"></i>
+    </button>
+
+    <!-- Inventory Panel -->
+    <div x-show="showInventory"
+         x-transition:enter="transition ease-out duration-300"
+         x-transition:enter-start="opacity-0 transform translate-y-4"
+         x-transition:enter-end="opacity-100 transform translate-y-0"
+         class="fixed bottom-20 right-4 w-72 bg-black/90 game-ui-border rounded-lg p-4">
+        <h3 class="text-xl mb-4">Digital Arsenal</h3>
+        <div class="grid grid-cols-4 gap-2">
+            <template x-for="i in 12" :key="i">
+                <div class="aspect-square game-ui-border rounded-lg flex items-center justify-center hover:bg-red-900/20 cursor-pointer">
+                    <i class="fas fa-question text-gray-600"></i>
+                </div>
+            </template>
+        </div>
+    </div>
+
+    <!-- Background Video Effect -->
+    <div class="fixed inset-0 -z-10 overflow-hidden pointer-events-none">
+        <div class="absolute inset-0 bg-gradient-to-b from-red-900/20 to-black/80"></div>
+        <div class="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(255,0,0,0.1)_0%,transparent_70%)]"></div>
+    </div>
+
+    <!-- Audio Controls -->
+    <div class="fixed bottom-4 left-4 flex space-x-2">
+        <button @click="happySound.mute(!happySound.mute())"
+                class="bg-red-900/50 hover:bg-red-900/70 text-white p-2 rounded-lg transition-colors">
+            <i class="fas" :class="happySound?.mute() ? 'fa-volume-up' : 'fa-volume-up'"></i>
+        </button>
+        <input type="range" 
+               min="0" 
+               max="100" 
+               :value="happySound?.volume() * 100"
+               @input="happySound.volume($event.target.value / 100)"
+               class="w-24">
+    </div>
+</body>
+</html>

@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=0.8">
+    <title>Intro to Goru</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/alpinejs/3.10.3/cdn.min.js" defer></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/howler/2.2.3/howler.min.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    integrity="sha512-p6U1q6E1O7Pz1+I2qJl4MUOqmD+Wr3lP5R3q8S1zk5YvF3h1Tfwf+cN1d3kOeKkdb2n0G2O4OyYj1hNs+Q4PRw=="
+    crossorigin="anonymous"
+    referrerpolicy="no-referrer"/>
+    <style>
+        @keyframes glitch {
+            0% { transform: translate(0) }
+            20% { transform: translate(-2px, 2px) }
+            40% { transform: translate(-2px, -2px) }
+            60% { transform: translate(2px, 2px) }
+            80% { transform: translate(2px, -2px) }
+            100% { transform: translate(0) }
+        }
+
+        @keyframes typing {
+            from { width: 0 }
+            to { width: 100% }
+        }
+
+        @keyframes floating {
+            0% { transform: translateY(0px) }
+            50% { transform: translateY(-20px) }
+            100% { transform: translateY(0px) }
+        }
+
+        .animate-typing {
+            overflow: hidden;
+            white-space: nowrap;
+            animation: typing 3.5s steps(40, end);
+        }
+
+        .animate-glitch {
+            animation: glitch 0.3s infinite;
+        }
+
+        .animate-float {
+            animation: floating 6s ease-in-out infinite;
+        }
+
+        .old-paper {
+            background: #f4d03f;
+            background-image: 
+                linear-gradient(to right, rgba(255,210,0,0.4) 0%, rgba(200,160,0,0.1) 100%);
+            box-shadow: 
+                0 0 15px rgba(0,0,0,0.2),
+                inset 0 0 50px rgba(255,255,255,0.8);
+        }
+
+        .digital-noise {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background-image: url('https://images.pexels.com/photos/577585/pexels-photo-577585.jpeg?auto=compress&cs=tinysrgb&w=600');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            opacity: 0.05;
+            pointer-events: none;
+            z-index: 1000;
+            filter: brightness(1.5)
+        }
+        
+
+        .matrix-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                linear-gradient(rgba(0,0,0,0.8), rgba(0,0,0,0.8)),
+                repeating-linear-gradient(
+                    0deg,
+                    rgba(0, 255, 0, 0.15) 0px,
+                    rgba(0, 255, 0, 0.15) 1px,
+                    transparent 1px,
+                    transparent 2px
+                );
+            background-size: 100% 2px;
+            animation: scroll 20s linear infinite;
+            opacity: 0.3;
+            pointer-events: none;
+        }
+
+        @keyframes scroll {
+            0% { background-position: 0 0; }
+            100% { background-position: 0 100%; }
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-b from-gray-900 to-black min-h-screen flex flex-col items-center justify-center overflow-hidden p-4"
+      x-data="{ 
+        stage: 'start',  // Start with 'start' stage
+        username: '',
+        darkSound: null,
+        happySound: null,
+        glitchSound: null,
+        initialized: false,
+        showGlitch: false,
+        password: '',
+        attempts: 3,
+        isHacked: false,
+        showTerminal: false,
+        terminalText: '',
+        showWarning: false,
+        volume: 50,
+        async init() {
+            if (this.initialized) return;
+            this.initialized = true;
+            
+            this.darkSound = new Howl({
+                src: ['dark.mp3'],
+                loop: true,
+                volume: 0.5
+            });
+            
+            this.happySound = new Howl({
+                src: ['happy.mp3'],
+                loop: true,
+                volume: 0.5
+            });
+
+            this.glitchSound = new Howl({
+                src: ['glitch.mp3'],
+                volume: 0.2
+            });
+        },
+        async startIntro() {
+            this.darkSound.play();
+            await this.sleep(1000);
+            this.stage = 'warning';
+            await this.sleep(3000);
+            this.showWarning = true;
+            this.triggerGlitch();
+            await this.sleep(2000);
+            this.stage = 'title';
+            await this.sleep(4000);
+            this.stage = 'terminal';
+            await this.typeTerminal('Initializing GORU systems...\n');
+            await this.typeTerminal('Loading neural networks...\n');
+            await this.typeTerminal('Establishing quantum connection...\n');
+            await this.typeTerminal('System ready.\n');
+            await this.sleep(1000);
+            this.stage = 'paper';
+            await this.sleep(5000);
+            this.stage = 'username';
+        },
+        async typeTerminal(text) {
+            for(let char of text) {
+                this.terminalText += char;
+                await this.sleep(50);
+            }
+        },
+        async triggerGlitch() {
+            this.showGlitch = true;
+            this.glitchSound.play();
+            await this.sleep(2500);
+            this.glitchSound.stop();
+            this.showGlitch = false;
+        },
+        submitUsername() {
+            if (!this.username) return;
+            this.darkSound.fade(0.5, 0, 1000);
+            setTimeout(() => {
+                this.darkSound.stop();
+                this.happySound.play();
+            }, 1000);
+            this.stage = 'password';
+        },
+        async submitPassword() {
+            if (this.password === '1337') {
+                this.isHacked = true;
+                this.stage = 'continue';
+            } else {
+                this.attempts--;
+                this.password = '';
+                if (this.attempts <= 0) {
+                await this.triggerGlitch();
+                    this.stage = 'locked';
+                }
+            }
+        },
+        continueToMain() {
+            window.location.href = 'mainPage.html';
+        },
+        adjustVolume() {
+            const vol = this.volume / 100;
+            this.darkSound.volume(vol);
+            this.happySound.volume(vol);
+        },
+        sleep(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        }
+      }"
+      x-init="init()"
+      @keydown.space="if(stage === 'continue') continueToMain()"
+      @click="if(stage === 'continue') continueToMain()">
+
+    <!-- Start Screen -->
+    <div x-show="stage === 'start'" 
+    class="fixed inset-0 bg-black flex items-center justify-center z-50">
+   <div class="text-white text-center space-y-4">
+       <!-- Headphones Icon: big size and lower opacity -->
+       <i class="fa-solid fa-headphones text-6xl opacity-30"></i>
+       <div class="text-4xl font-mono">Increase volume for full experience.</div>
+       <button @click="stage = 'warning'; startIntro()" 
+               class="bg-blue-500 text-white p-4 rounded-lg w-full hover:bg-blue-700">
+           Start
+       </button>
+   </div>
+</div>
+
+
+    <!-- Background Effects -->
+    <div class="digital-noise"></div>
+    <div class="matrix-bg"></div>
+    
+    <!-- Warning Screen -->
+    <div x-show="stage === 'warning'" 
+         class="fixed inset-0 bg-black flex items-center justify-center z-50">
+        <div x-show="showWarning"
+             x-transition:enter="transition ease-out duration-1000"
+             class="text-red-500 text-center space-y-4">
+            <i class="fas fa-exclamation-triangle text-6xl mb-4"></i>
+            <div class="text-2xl font-mono">WARNING: GORU SYSTEM IS SCARY AND DANGEROUS</div>
+            <div class="text-lg font-mono">Proceeding at your own risk...</div>
+        </div>
+    </div>
+    <!-- Loading -->
+    <div x-show="stage === 'initial'" 
+         class="text-white text-2xl animate-pulse flex items-center">
+        <i class="fas fa-spinner fa-spin mr-3"></i>
+        Loading GORU Systems...
+    </div>
+
+    <!-- Terminal -->
+    <div x-show="stage === 'terminal'"
+         class="w-full max-w-2xl bg-black border border-green-500 p-4 font-mono text-green-500 rounded">
+        <div x-text="terminalText" class="whitespace-pre-line"></div>
+    </div>
+
+    <!-- Title -->
+    <div x-show="stage === 'title'" 
+         x-transition:enter="transition ease-out duration-1000"
+         x-transition:enter-start="opacity-0 transform translate-y-4"
+         x-transition:enter-end="opacity-100 transform translate-y-0"
+         :class="{'animate-glitch': showGlitch}"
+         class="text-white text-6xl md:text-7xl lg:text-8xl font-bold animate-typing text-center mb-8">
+        <i class="fas fa-network-wired mr-4"></i>
+        Guru-or-Goru
+    </div>
+
+    <!-- Old Paper -->
+    <div x-show="stage === 'paper'" 
+         x-transition:enter="transition ease-out duration-1000"
+         x-transition:enter-start="opacity-0 scale-95"
+         x-transition:enter-end="opacity-100 scale-100"
+         :class="{'animate-glitch': showGlitch}"
+         class="old-paper p-8 max-w-2xl mx-4 rounded-lg transform rotate-1 backdrop-blur-sm">
+        <h2 class="text-4xl mb-6 font-serif text-gray-800 text-center">
+            <i class="fas fa-scroll mr-3"></i>
+            Made by:
+        </h2>
+        <p class="text-lg leading-relaxed text-gray-700 font-serif">
+            This website is made by Siddhartha Dhakal. Who is a passionate web developer who is constantly learning and developing new projects. This is a portfolio for my skills and projects. Have fun 💀
+        </p>
+        <div class="mt-6 text-right text-gray-600 italic">
+            - Not By Siddhartha Dhakal
+        </div>
+    </div>
+
+    <!-- Username Form -->
+    <div x-show="stage === 'username'" 
+         x-transition:enter="transition ease-out duration-1000"
+         x-transition:enter-start="opacity-0 transform translate-y-4"
+         x-transition:enter-end="opacity-100 transform translate-y-0"
+         class="text-center space-y-6">
+        <div class="text-white text-2xl animate-typing flex items-center justify-center">
+            <i class="fas fa-user-circle mr-3"></i>
+            What about you, Your name?
+        </div>
+        <form @submit.prevent="submitUsername()" class="flex flex-col items-center gap-4">
+            <input type="text" 
+                   x-model="username" 
+                   class="bg-gray-800/50 text-black px-6 py-3 rounded-lg border-2 border-purple-500/50 focus:border-purple-500 focus:outline-none w-72 md:w-96 backdrop-blur-sm"
+                   placeholder="Enter your temporary username">
+            <button type="submit" 
+                    class="bg-purple-600 text-white px-8 py-3 rounded-lg hover:bg-purple-700 transition-colors transform hover:scale-105 transition-transform duration-200 flex items-center">
+                <i class="fas fa-door-open mr-2"></i>
+                Enter the system
+            </button>
+        </form>
+    </div>
+
+    <!-- Password Challenge -->
+    <div x-show="stage === 'password'" 
+         x-transition:enter="transition ease-out duration-1000"
+         class="text-center space-y-6">
+        <div class="text-red-500 text-2xl animate-pulse flex items-center justify-center">
+            <i class="fas fa-shield-alt mr-3"></i>
+            Human verification Required
+        </div>
+        <div class="text-white text-lg">Attempts remaining: <span x-text="attempts"></span></div>
+        <form @submit.prevent="submitPassword()" class="flex flex-col items-center gap-4">
+            <input type="password" 
+                   x-model="password" 
+                   class="bg-gray-800/50 text-black px-6 py-3 rounded-lg border-2 border-red-500/50 focus:border-red-500 focus:outline-none w-72 md:w-96 backdrop-blur-sm"
+                   placeholder="Enter security override code">
+            <button type="submit" 
+                    class="bg-red-600 text-white px-8 py-3 rounded-lg hover:bg-red-700 transition-colors transform hover:scale-105 transition-transform duration-200 flex items-center">
+                <i class="fas fa-key mr-2"></i>
+                Override Security
+            </button>
+        </form>
+        <div class="text-gray-400 text-sm">Hint: Enter '1337'.</div>
+    </div>
+
+    <!-- Locked Out -->
+    <div x-show="stage === 'locked'" 
+         x-transition:enter="transition ease-out duration-1000"
+         class="text-center space-y-6">
+        <div class="text-red-500 text-4xl animate-glitch flex items-center justify-center">
+            <i class="fas fa-ban mr-3"></i>
+            ACCESS DENIED
+        </div>
+        <div class="text-white text-xl">System locked. Please try again later.</div>
+        <button @click="window.location.reload()" 
+                class="bg-red-600 text-white px-8 py-3 rounded-lg hover:bg-red-700 transition-colors">
+            <i class="fas fa-redo mr-2"></i>
+            Reset System
+        </button>
+    </div>
+     <!-- Continue Prompt -->
+    <div x-show="stage === 'continue'" 
+    x-transition:enter="transition ease-out duration-1000"
+    class="text-center space-y-6">
+   <div class="text-green-500 text-4xl mb-8" :class="{'animate-glitch': showGlitch}">
+       <i class="fas fa-check-circle mr-3"></i>
+       Access Granted
+   </div>
+   <div class="text-white text-3xl animate-float flex flex-col items-center">
+       <div class="mb-4">Welcome, <span x-text="username" class="text-purple-500"></span></div>
+       <div class="text-xl text-gray-400">Tap or hit space to continue...</div>
+   </div>
+</div>
+
+<!-- Floating Particles -->
+<div class="fixed inset-0 pointer-events-none"
+    x-show="stage !== 'initial' && stage !== 'warning'"
+    x-transition:enter="transition ease-out duration-1000">
+   <div class="absolute w-4 h-4 bg-purple-500/20 rounded-full animate-float" style="left: 10%; top: 20%"></div>
+   <div class="absolute w-3 h-3 bg-blue-500/20 rounded-full animate-float" style="left: 80%; top: 40%; animation-delay: 1s"></div>
+   <div class="absolute w-5 h-5 bg-green-500/20 rounded-full animate-float" style="left: 30%; top: 60%; animation-delay: 2s"></div>
+   <div class="absolute w-6 h-6 bg-red-500/20 rounded-full animate-float" style="left: 70%; top: 80%; animation-delay: 3s"></div>
+</div>
+
+<!-- Audio Controls Panel -->
+<div class="fixed bottom-4 right-4 text-white space-y-2">
+   <div class="bg-gray-800/50 p-4 rounded-lg backdrop-blur-sm">
+       <div class="flex items-center space-x-2">
+           <i class="fas fa-volume-down"></i>
+           <input type="range" 
+                  x-model="volume" 
+                  @input="adjustVolume()"
+                  class="w-24 h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer"
+                  min="0" 
+                  max="100">
+           <i class="fas fa-volume-up"></i>
+       </div>
+   </div>
+</div>
+
+<!-- Loading Progress -->
+<div x-show="stage === 'initial'" 
+    class="fixed bottom-4 left-4 right-4 md:left-1/4 md:right-1/4">
+   <div class="bg-gray-800/50 rounded-lg p-4 backdrop-blur-sm">
+       <div class="flex justify-between text-white mb-2">
+           <span>Loading GORU Systems</span>
+           <span x-text="Math.floor(Math.random() * 100) + '%'"></span>
+       </div>
+       <div class="w-full bg-gray-700 rounded-full h-2">
+           <div class="bg-purple-600 h-2 rounded-full animate-pulse" 
+                :style="'width: ' + (Math.floor(Math.random() * 100)) + '%'"></div>
+       </div>
+   </div>
+</div>
+
+<!-- System Status -->
+<div class="fixed top-4 left-4 text-white text-sm"
+    x-show="stage !== 'initial' && stage !== 'warning'">
+   <div class="bg-gray-800/50 p-3 rounded-lg backdrop-blur-sm space-y-2">
+       <div class="flex items-center space-x-2">
+           <i class="fas fa-server"></i>
+           <span>System Status: </span>
+           <span class="text-green-500">Online</span>
+       </div>
+       <div class="flex items-center space-x-2">
+           <i class="fas fa-clock"></i>
+           <span x-text="new Date().toLocaleTimeString()"></span>
+       </div>
+       <div class="flex items-center space-x-2">
+           <i class="fas fa-shield-alt"></i>
+           <span>Security Level: </span>
+           <span class="text-yellow-500">GORU</span>
+       </div>
+   </div>
+</div>
+
+<!-- Easter Egg -->
+<div class="fixed bottom-4 left-4 text-xs text-gray-600"
+    @click="if(stage === 'password') password = '1337'">
+   <div class="cursor-help">v3.1337</div>
+</div>
+</body>
+<script>
+    const originalConsoleError = console.error;
+console.error = function (message, ...optionalParams) {
+    if (
+        typeof message === "string"
+    ) {
+        return; // Suppress the error
+    }
+    originalConsoleError(message, ...optionalParams);
+};
+
+</script>
+</html>
