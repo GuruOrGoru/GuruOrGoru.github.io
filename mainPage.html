@@ -323,12 +323,10 @@
                  class="space-y-8">
             <div class="game-ui-border p-8 rounded-lg backdrop-blur-sm bg-black/50">
                 <h1 class="text-4xl md:text-6xl mb-4 horror-text-shadow">
-                    Welcome to the Nightmare
+                    Welcome to the System
                 </h1>
                 <p class="text-gray-400 text-lg leading-relaxed">
-                    I am a digital architect crafting nightmares in code. 
-                    My creations lurk in the shadows of the web, waiting to be discovered.
-                    Enter at your own risk.
+                    Who me? Ohh, I am just a normal developer who is learning .NET for web development. Addition to that I also love Game development and currently going through the statges of Unity. This website is nothing special just a static site to display my portfolio.
                 </p>
             </div>
 
@@ -336,20 +334,20 @@
                 <div class="game-ui-border p-6 rounded-lg hover:bg-red-900/20 transition-colors">
                     <h2 class="text-2xl mb-4 flex items-center">
                         <i class="fas fa-code-branch mr-3"></i>
-                        Latest Experiments
+                        Latest Projects:
                     </h2>
                     <ul class="space-y-4 text-gray-400">
                         <li class="flex items-center">
                             <i class="fas fa-vial mr-2"></i>
-                            Neural Network Visualization
+                            GoruNet(Social media)(Not yet hosted)
                         </li>
                         <li class="flex items-center">
                             <i class="fas fa-robot mr-2"></i>
-                            AI-Powered Horror Generator
+                            GuruOrGoru(unity)(In Progress)
                         </li>
                         <li class="flex items-center">
                             <i class="fas fa-ghost mr-2"></i>
-                            Digital Haunting Simulator
+                            Portfolio
                         </li>
                     </ul>
                 </div>
@@ -357,7 +355,7 @@
                 <div class="game-ui-border p-6 rounded-lg hover:bg-red-900/20 transition-colors">
                     <h2 class="text-2xl mb-4 flex items-center">
                         <i class="fas fa-trophy mr-3"></i>
-                        Achievements
+                        Your Achievements
                     </h2>
                     <div class="space-y-4">
                         <template x-for="achievement in achievements" :key="achievement.id">
@@ -375,17 +373,15 @@
         <section x-show="currentSection === 'projects'"
                  x-transition:enter="transition ease-out duration-500"
                  class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            <template x-for="i in 6" :key="i">
-                <div class="game-ui-border p-6 rounded-lg hover:bg-red-900/20 transition-colors cursor-pointer">
+                 <div class="game-ui-border p-6 rounded-lg hover:bg-red-900/20 transition-colors cursor-pointer">
                     <div class="aspect-w-16 aspect-h-9 mb-4">
                         <div class="w-full h-full bg-gray-800 rounded-lg flex items-center justify-center">
                             <i class="fas fa-question text-4xl"></i>
                         </div>
                     </div>
-                    <h3 class="text-xl mb-2">Project Echo #<span x-text="i"></span></h3>
-                    <p class="text-gray-400">A forbidden experiment that pushes the boundaries of digital consciousness.</p>
+                    <h3 class="text-xl mb-2">Displayable Projects Coming soon<span x-text="i"></span></h3>
+                    <p class="text-gray-400">Soon and sooner.</p>
                 </div>
-            </template>
         </section>
 
         <!-- Skills Section -->
@@ -395,16 +391,16 @@
             <div class="game-ui-border p-6 rounded-lg">
                 <h2 class="text-2xl mb-6 flex items-center">
                     <i class="fas fa-dna mr-3"></i>
-                    Digital Arsenal
+                    Skills
                 </h2>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <template x-for="(skill, index) in [
-                        { name: 'Neural Programming', level: 87 },
-                        { name: 'Reality Manipulation', level: 92 },
-                        { name: 'Quantum Computing', level: 76 },
-                        { name: 'Bio-digital Integration', level: 95 },
-                        { name: 'Chaos Engineering', level: 88 },
-                        { name: 'Mind Hacking', level: 91 }
+                        { name: 'C# programming', level: 87 },
+                        { name: 'Ruby On Rails', level: 92 },
+                        { name: 'ASP.NET', level: 76 },
+                        { name: 'Blazor', level: 95 },
+                        { name: 'Unity', level: 46 },
+                        { name: 'Monogame', level: 56 }
                     ]" :key="index">
                         <div class="space-y-2">
                             <div class="flex justify-between text-gray-400">
@@ -422,28 +418,28 @@
 
             <!-- Skill Tree -->
             <div class="game-ui-border p-6 rounded-lg">
-                <h2 class="text-2xl mb-6">Dark Arts Mastery</h2>
+                <h2 class="text-2xl mb-6">Skill summary</h2>
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <!-- Frontend Path -->
                     <div class="space-y-4">
-                        <h3 class="text-xl mb-4 horror-text-shadow">Frontend Sorcery</h3>
+                        <h3 class="text-xl mb-4 horror-text-shadow">Frontend</h3>
                         <div class="space-y-2">
                             <div class="game-ui-border p-3 rounded bg-red-900/20">
                                 <div class="flex justify-between">
-                                    <span>HTML5 Necromancy</span>
+                                    <span>Blazor+HTML</span>
                                     <span>MAX</span>
                                 </div>
                             </div>
                             <div class="game-ui-border p-3 rounded">
                                 <div class="flex justify-between">
-                                    <span>CSS Dark Arts</span>
+                                    <span>Tailwind</span>
                                     <span>LVL 18</span>
                                 </div>
                             </div>
                             <div class="game-ui-border p-3 rounded">
                                 <div class="flex justify-between">
-                                    <span>JavaScript Curses</span>
-                                    <span>LVL 15</span>
+                                    <span>Alpine</span>
+                                    <span>LVL 35</span>
                                 </div>
                             </div>
                         </div>
@@ -451,24 +447,24 @@
 
                     <!-- Backend Path -->
                     <div class="space-y-4">
-                        <h3 class="text-xl mb-4 horror-text-shadow">Backend Witchcraft</h3>
+                        <h3 class="text-xl mb-4 horror-text-shadow">Backend</h3>
                         <div class="space-y-2">
                             <div class="game-ui-border p-3 rounded">
                                 <div class="flex justify-between">
-                                    <span>Node.js Rituals</span>
-                                    <span>LVL 12</span>
+                                    <span>Ruby On Rails</span>
+                                    <span>LVL 48</span>
                                 </div>
                             </div>
                             <div class="game-ui-border p-3 rounded bg-red-900/20">
                                 <div class="flex justify-between">
-                                    <span>Python Shamanism</span>
-                                    <span>MAX</span>
+                                    <span>ASP.NET</span>
+                                    <span>LVL 12</span>
                                 </div>
                             </div>
                             <div class="game-ui-border p-3 rounded">
                                 <div class="flex justify-between">
-                                    <span>Database Demonology</span>
-                                    <span>LVL 16</span>
+                                    <span>Database</span>
+                                    <span>LVL 8</span>
                                 </div>
                             </div>
                         </div>
@@ -476,24 +472,24 @@
 
                     <!-- DevOps Path -->
                     <div class="space-y-4">
-                        <h3 class="text-xl mb-4 horror-text-shadow">DevOps Occultism</h3>
+                        <h3 class="text-xl mb-4 horror-text-shadow">Game Journey</h3>
                         <div class="space-y-2">
                             <div class="game-ui-border p-3 rounded">
                                 <div class="flex justify-between">
-                                    <span>Docker Summoning</span>
-                                    <span>LVL 14</span>
+                                    <span>Scripting</span>
+                                    <span>LVL 49</span>
                                 </div>
                             </div>
                             <div class="game-ui-border p-3 rounded">
                                 <div class="flex justify-between">
-                                    <span>Cloud Divination</span>
-                                    <span>LVL 13</span>
+                                    <span>3D Modeling</span>
+                                    <span>LVL 2</span>
                                 </div>
                             </div>
                             <div class="game-ui-border p-3 rounded bg-red-900/20">
                                 <div class="flex justify-between">
-                                    <span>CI/CD Blood Pacts</span>
-                                    <span>MAX</span>
+                                    <span>Animations</span>
+                                    <span>3</span>
                                 </div>
                             </div>
                         </div>
@@ -507,24 +503,24 @@
                  x-transition:enter="transition ease-out duration-500"
                  class="space-y-8">
             <div class="game-ui-border p-8 rounded-lg backdrop-blur-sm bg-black/50">
-                <h2 class="text-4xl mb-6 horror-text-shadow">Summon Me</h2>
+                <h2 class="text-4xl mb-6 horror-text-shadow">Contact Goru(UNDER CONSTRUCTION)</h2>
                 <form @submit.prevent="addNotification('Message sent to the void...')" class="space-y-6">
                     <div class="space-y-2">
                         <label class="block text-gray-400">Your Name (True name not required)</label>
                         <input type="text" 
                                class="w-full bg-gray-900 border-2 border-red-900/50 rounded-lg p-3 text-white focus:border-red-500 transition-colors"
-                               placeholder="Enter your alias">
+                               placeholder="Enter your name">
                     </div>
                     <div class="space-y-2">
-                        <label class="block text-gray-400">Digital Séance Method (Email)</label>
+                        <label class="block text-gray-400">Address (Email)</label>
                         <input type="email" 
                                class="w-full bg-gray-900 border-2 border-red-900/50 rounded-lg p-3 text-white focus:border-red-500 transition-colors"
-                               placeholder="your@ethereal.realm">
+                               placeholder="your@Guru.Goru">
                     </div>
                     <div class="space-y-2">
-                        <label class="block text-gray-400">Your Message to the Void</label>
+                        <label class="block text-gray-400">Your Message</label>
                         <textarea class="w-full bg-gray-900 border-2 border-red-900/50 rounded-lg p-3 text-white focus:border-red-500 transition-colors h-32"
-                                  placeholder="Speak your dark desires..."></textarea>
+                                  placeholder="Speak your desires..."></textarea>
                     </div>
                     <button type="submit"
                             class="w-full bg-red-900/50 hover:bg-red-900/70 text-white p-4 rounded-lg transition-colors flex items-center justify-center space-x-2">
@@ -536,12 +532,12 @@
 
             <!-- Social Links -->
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <a href="#" class="game-ui-border p-6 rounded-lg hover:bg-red-900/20 transition-colors group">
+                <a href="github.com/GuruOrGoru" class="game-ui-border p-6 rounded-lg hover:bg-red-900/20 transition-colors group">
                     <div class="flex items-center space-x-4">
                         <i class="fab fa-github text-4xl group-hover:animate-pulse"></i>
                         <div>
-                            <div class="text-xl">GitHub Catacombs</div>
-                            <div class="text-gray-400">Explore my cursed repositories</div>
+                            <div class="text-xl">GitHub</div>
+                            <div class="text-gray-400">My repositories available.</div>
                         </div>
                     </div>
                 </a>
@@ -554,12 +550,12 @@
                         </div>
                     </div>
                 </a>
-                <a href="#" class="game-ui-border p-6 rounded-lg hover:bg-red-900/20 transition-colors group">
+                <a href="x.com/GuruOrGoru" class="game-ui-border p-6 rounded-lg hover:bg-red-900/20 transition-colors group">
                     <div class="flex items-center space-x-4">
                         <i class="fab fa-twitter text-4xl group-hover:animate-pulse"></i>
                         <div>
-                            <div class="text-xl">Twitter Grimoire</div>
-                            <div class="text-gray-400">Digital incantations & updates</div>
+                            <div class="text-xl">Twitter</div>
+                            <div class="text-gray-400">Fun</div>
                         </div>
                     </div>
                 </a>
@@ -594,7 +590,7 @@
          x-transition:enter-start="opacity-0 transform translate-y-4"
          x-transition:enter-end="opacity-100 transform translate-y-0"
          class="fixed bottom-20 right-4 w-72 bg-black/90 game-ui-border rounded-lg p-4">
-        <h3 class="text-xl mb-4">Digital Arsenal</h3>
+        <h3 class="text-xl mb-4">Inventory</h3>
         <div class="grid grid-cols-4 gap-2">
             <template x-for="i in 12" :key="i">
                 <div class="aspect-square game-ui-border rounded-lg flex items-center justify-center hover:bg-red-900/20 cursor-pointer">
