@@ -196,8 +196,7 @@
             }
         },
         continueToMain() {
-            history.pushState({}, '', '/site');
-            window.location.href = 'mainPage.html';
+window.history.pushState({}, '', '/home');            window.location.href = 'mainPage.html';
         },
         adjustVolume() {
             const vol = this.volume / 100;
