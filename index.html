@@ -196,6 +196,7 @@
             }
         },
         continueToMain() {
+            history.pushState({}, '', '/site');
             window.location.href = 'mainPage.html';
         },
         adjustVolume() {
