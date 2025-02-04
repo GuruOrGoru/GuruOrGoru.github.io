@@ -196,11 +196,7 @@
             }
         },
         continueToMain() {
-    // Change the URL in the browser's address bar
-    window.history.pushState({}, '', '/home');  
-    
-    // Redirect to the actual new page
-    window.location.href = 'mainPage.html';
+        window.location.href = 'mainPage.html';
         },
         adjustVolume() {
             const vol = this.volume / 100;
